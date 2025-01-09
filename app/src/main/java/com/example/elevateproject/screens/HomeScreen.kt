@@ -88,10 +88,7 @@ fun HomeScreen(viewModel: QuoteViewModel = viewModel(), navController: NavContro
 
                         IconButton(
                             onClick = {
-//                                viewModel.saveToFavorites(
-//                                    quote = quoteState.quote,
-//                                    author = quoteState.author
-//                                )
+
                             }
                         ) {
                             Icon(
