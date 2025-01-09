@@ -1,14 +1,14 @@
 package com.example.elevateproject.screens
 
-import androidx.compose.foundation.background
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material3.Button
+import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,26 +19,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
-import com.example.elevateproject.data.quoteData.QuoteState
-import com.example.elevateproject.ui.theme.ElevateProjectTheme
 import com.example.elevateproject.viewmodels.QuoteViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 
 /*
 Main entry point for the app. Here is defined the home screen in a Scaffold. The bottom bar
 is attached to the Scaffold.
  */
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun HomeScreen(viewModel: QuoteViewModel = viewModel(), navController: NavController) {
     val quoteState by viewModel.quoteState.collectAsState()
+    val isFavorite by viewModel.isFavorite.collectAsState()
 
     // Fetch the quote when the screen is displayed
     LaunchedEffect(Unit) {
@@ -48,6 +49,15 @@ fun HomeScreen(viewModel: QuoteViewModel = viewModel(), navController: NavContro
     Scaffold(
         bottomBar = {
             BottomBar(navController)
+        },
+        floatingActionButton = {
+            FloatingActionButton(onClick = { navController.navigate("favorites") }) {
+                Icon(
+                    imageVector = Icons.Default.Favorite,
+                    contentDescription = "Go to Favorites",
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
         },
         content = { padding -> //Padding for organizing the content on the Scaffold
             Column(
@@ -88,13 +98,17 @@ fun HomeScreen(viewModel: QuoteViewModel = viewModel(), navController: NavContro
 
                         IconButton(
                             onClick = {
-
+                                if (isFavorite) {
+                                    viewModel.removeQuoteFromFavorites(quoteState.quote, quoteState.author)
+                                } else {
+                                    viewModel.saveQuoteToFavorites(quoteState.quote, quoteState.author)
+                                }
                             }
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Favorite,
-                                contentDescription = "Save to Favorites",
-                                tint = MaterialTheme.colorScheme.primary
+                                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Filled.FavoriteBorder,
+                                contentDescription = if (isFavorite) "Remove from Favorites" else "Save to Favorites",
+                                tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                             )
                         }
                     }
@@ -104,28 +118,65 @@ fun HomeScreen(viewModel: QuoteViewModel = viewModel(), navController: NavContro
     )
 }
 
-
-@Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreenPreview() {
-    // Simulates a ViewModel with a quote
-    val quoteViewModel = remember {
-        QuoteViewModel().apply {
-            quoteState = MutableStateFlow(
-                QuoteState(
-                    quote = "To be or not to be, that is the question.",
-                    author = "William Shakespeare",
-                    isLoading = false
-                )
+fun FavoritesScreen(navController: NavController, viewModel: QuoteViewModel) {
+    val favoriteQuotes by viewModel.favoriteQuotes.collectAsState(initial = emptyList())
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Favorite Quotes") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.Favorite, contentDescription = "Back")
+                    }
+                }
             )
         }
-    }
-
-    // Simulates the NavController
-    val navController = rememberNavController()
-
-    // Applies the theme to the preview
-    ElevateProjectTheme {
-        HomeScreen(viewModel = quoteViewModel, navController = navController)
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+        ) {
+            if (favoriteQuotes.isEmpty()) {
+                Text(
+                    text = "No favorite quotes yet!",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .wrapContentHeight()
+                        .padding(16.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(favoriteQuotes) { quote ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp)) {
+                                Text(
+                                    text = quote.quote,
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    modifier = Modifier.padding(bottom = 8.dp)
+                                )
+                                Text(
+                                    text = "— ${quote.author}",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

@@ -8,17 +8,20 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.elevateproject.data.diaryData.DiaryDao
 import com.example.elevateproject.data.diaryData.DiaryEntity
+import com.example.elevateproject.data.quoteData.QuoteDao
+import com.example.elevateproject.data.quoteData.QuoteEntity
 import com.example.elevateproject.data.tasksData.TaskDao
 import com.example.elevateproject.data.tasksData.TaskEntity
 
 /*
 Represents the database of the application with the given entities and version.
  */
-@Database(entities = [DiaryEntity::class, TaskEntity::class], version = 2, exportSchema = false)
+@Database(entities = [DiaryEntity::class, TaskEntity::class, QuoteEntity::class], version = 3, exportSchema = false)
 abstract class DiaryDatabase : RoomDatabase() {
 
     abstract fun diaryDao(): DiaryDao
     abstract fun taskDao(): TaskDao
+    abstract fun quoteDao(): QuoteDao
 
     companion object {
         @Volatile
@@ -41,6 +44,20 @@ abstract class DiaryDatabase : RoomDatabase() {
             }
         }
 
+        // Migration object for database version 2 to 3.
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("""
+                    CREATE TABLE IF NOT EXISTS quotes_table (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+                        quote TEXT NOT NULL,
+                        author TEXT NOT NULL,
+                        date TEXT NOT NULL
+                    )
+                """)
+            }
+        }
+
         fun getDatabase(context: Context): DiaryDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -48,7 +65,8 @@ abstract class DiaryDatabase : RoomDatabase() {
                     DiaryDatabase::class.java,
                     "diary_database"
                 )
-                    .addMigrations(MIGRATION_1_2).build()
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3) //Add the migration here
+                    .build()
                 INSTANCE = instance
                 instance
             }

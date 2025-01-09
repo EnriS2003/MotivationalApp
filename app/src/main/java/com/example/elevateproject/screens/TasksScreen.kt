@@ -1,4 +1,4 @@
-package com.example.elevateproject.screens.taskScreens
+package com.example.elevateproject.screens
 
 import android.os.Build
 import androidx.annotation.RequiresApi
@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Menu
@@ -26,16 +25,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import com.example.elevateproject.data.tasksData.Task
-import com.example.elevateproject.screens.BottomBar
 import com.example.elevateproject.viewmodels.TaskViewModel
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskScreen(navController: NavController, viewModel: TaskViewModel) {
+fun TasksScreen(navController: NavController, viewModel: TaskViewModel) {
     val tasks by viewModel.tasks.collectAsState()
     var showExpiredTasks by remember { mutableStateOf(false) } // State of the filter
 
