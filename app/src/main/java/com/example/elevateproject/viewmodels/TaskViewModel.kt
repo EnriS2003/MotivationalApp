@@ -16,8 +16,35 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
+/**
+ * Repository for managing tasks.
+ *
+ * The `TaskRepository` serves as an abstraction layer between the `TaskDao` (data access object)
+ * and the rest of the application. It encapsulates the logic for accessing and managing task-related data,
+ * ensuring that the ViewModels interact with a clean and consistent interface.
+ *
+ * Properties:
+ * - `allTasks`: A `Flow` that provides a real-time stream of all tasks stored in the database.
+ *
+ * Methods:
+ * - `insertTask(task: TaskEntity)`: Inserts a new task into the database.
+ * - `updateTask(task: TaskEntity)`: Updates an existing task in the database.
+ * - `deleteTask(task: TaskEntity)`: Deletes a specific task from the database.
+ * - `resetDatabase()`: Clears all tasks and diaries from the database by invoking DAO methods.
+ *
+ * Dependencies:
+ * - `TaskDao`: Used to interact with the tasks-related operations in the database.
+ *
+ * Key Features:
+ * - Separation of Concerns: This repository ensures that the ViewModels do not directly interact with
+ *   the database, maintaining a clean architecture.
+ * - Real-Time Updates: By leveraging Kotlin Flows, the repository ensures that changes to the task data
+ *   are observed in real-time by the ViewModel and subsequently by the UI.
+ * - Database Reset: Provides functionality to clear all tasks and diaries, useful for resetting the application state.
+ */
 class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
 
     // StateFlow for holding the list of tasks

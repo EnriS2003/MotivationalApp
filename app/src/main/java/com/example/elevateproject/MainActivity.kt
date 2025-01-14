@@ -18,6 +18,7 @@ import com.example.elevateproject.viewmodels.ThemeViewModel
 
 /**
  * Main entry point of the application.
+ *
  * This activity sets up the Compose environment, applies the app's theme, and initializes the navigation graph.
  * It also provides instances of the ViewModels needed across the app.
  */

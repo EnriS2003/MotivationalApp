@@ -17,6 +17,15 @@ import androidx.compose.ui.unit.dp
 import com.example.elevateproject.ui.theme.ElevateProjectTheme
 import com.example.elevateproject.viewmodels.ThemeViewModel
 
+/**
+ * Composable function for displaying the Settings screen.
+ *
+ * This screen provides various settings options for the app, such as theme selection and app information.
+ * It also includes navigation functionality via the bottom bar.
+ *
+ * @param navController The navigation controller for navigating between screens.
+ * @param viewModel The `ThemeViewModel` that provides the state and logic for theme selection.
+ */
 @Composable
 fun SettingsScreen(navController: NavController, viewModel: ThemeViewModel) {
     Scaffold(
@@ -61,7 +70,13 @@ fun SettingsScreen(navController: NavController, viewModel: ThemeViewModel) {
     }
 }
 
-
+/**
+ * Composable function for displaying the theme selection options.
+ *
+ * Allows users to switch between Light, Dark, and System Default themes.
+ *
+ * @param themeViewModel The `ThemeViewModel` managing the state and logic for theme selection.
+ */
 @Composable
 fun ThemeSetting(themeViewModel: ThemeViewModel) {
     val selectedTheme by themeViewModel.theme.collectAsState()
@@ -78,23 +93,27 @@ fun ThemeSetting(themeViewModel: ThemeViewModel) {
                     onClick = { themeViewModel.setTheme(theme) } // Update the theme
                 )
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(theme)
+                Text(theme) // Display the theme name.
             }
         }
     }
 }
 
+/**
+ * Preview function for the Settings screen.
+ *
+ * This simulates the `SettingsScreen` for testing and visualization in the IDE preview.
+ */
 @Preview(showBackground = true)
 @Composable
 fun SettingsScreenPreview() {
-    // Simulate the ViewModel
+    // Simulate the ViewModel with a default theme set to "System Default".
     val themeViewModel = remember {
         ThemeViewModel().apply {
             setTheme("System Default") // Set the initial theme
         }
     }
-
-    // Preview the SettingsScreen
+    // Apply the theme and display the Settings screen preview.
     ElevateProjectTheme {
         SettingsScreen(navController = NavController(LocalContext.current), viewModel = themeViewModel)
     }

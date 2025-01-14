@@ -28,6 +28,27 @@ import com.example.elevateproject.data.tasksData.Task
 import com.example.elevateproject.viewmodels.TaskViewModel
 import kotlinx.coroutines.launch
 
+/**
+ * This file defines the user interface and logic for managing tasks in the application.
+ * It includes the following main components:
+ *
+ * - `TaskScreen`: The main screen displaying the list of tasks. It allows users to add new tasks,
+ *   view existing ones, and filter completed tasks.
+ * - `TaskItem`: A composable component that represents an individual task, along with its
+ *   associated actions such as marking as completed or deleting.
+ * - `AddTaskScreen`: A screen for adding new tasks, including fields for the task title and deadline.
+ *
+ * Key Features:
+ * - Dynamic task list display.
+ * - Filtering of completed tasks.
+ * - Ability to add, update, or delete tasks.
+ * - Utilizes Material Design 3 components for a modern and responsive UI.
+ *
+ * Main Dependencies:
+ * - ViewModel for managing task state.
+ * - Repository for database interactions related to tasks.
+ * - `NavController` for navigation between screens.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,8 +125,18 @@ fun TasksScreen(navController: NavController, viewModel: TaskViewModel) {
     }
 }
 
-/*
-TaskItem composable represents a single task in the list.
+/**
+ * Displays a single task in the task list.
+ *
+ * Highlights:
+ * - Adjusts the card's background color based on the task's completion status or if the deadline has passed.
+ * - Provides actions for marking the task as completed or deleting it.
+ * - Uses `remember` to compute if the deadline has passed for the task dynamically.
+ *
+ * Parameters:
+ * - `task`: The task to display.
+ * - `onMarkCompleted`: Callback to mark the task as completed or undo completion.
+ * - `onDelete`: Callback to delete the task.
  */
 @Composable
 fun TaskItem(task: Task, onMarkCompleted: () -> Unit, onDelete: () -> Unit) {
@@ -164,6 +195,19 @@ fun TaskItem(task: Task, onMarkCompleted: () -> Unit, onDelete: () -> Unit) {
     }
 }
 
+/**
+ * Screen for adding a new task to the task list.
+ *
+ * Highlights:
+ * - Includes input fields for the task title and deadline.
+ * - Provides a date picker dialog for selecting the deadline.
+ * - Validates input fields and shows a snackbar for missing fields.
+ * - Uses `SnackbarHost` to display messages for invalid input.
+ *
+ * Parameters:
+ * - `navController`: Handles navigation between screens.
+ * - `viewModel`: Manages the task state and interactions.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTaskScreen(navController: NavController, viewModel: TaskViewModel) {
@@ -256,6 +300,18 @@ fun AddTaskScreen(navController: NavController, viewModel: TaskViewModel) {
     }
 }
 
+/**
+ * Date picker dialog for selecting a date.
+ *
+ * Highlights:
+ * - Displays a Material Design date picker inside an alert dialog.
+ * - Scales the date picker for better UI fitting.
+ * - Returns the selected date in "dd/MM/yyyy" format.
+ *
+ * Parameters:
+ * - `onDismissRequest`: Callback for dismissing the dialog without selection.
+ * - `onDateSelected`: Callback for returning the selected date as a string.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerDialog(

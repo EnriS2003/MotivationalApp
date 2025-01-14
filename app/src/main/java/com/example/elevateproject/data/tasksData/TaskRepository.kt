@@ -2,6 +2,9 @@ package com.example.elevateproject.data.tasksData
 
 import kotlinx.coroutines.flow.Flow
 
+/*
+ * Repository for managing tasks.
+ */
 class TaskRepository(private val taskDao: TaskDao) {
     val allTasks: Flow<List<TaskEntity>> = taskDao.getAllTasks()
 
@@ -15,10 +18,5 @@ class TaskRepository(private val taskDao: TaskDao) {
 
     suspend fun deleteTask(task: TaskEntity) {
         taskDao.deleteTask(task)
-    }
-
-    suspend fun resetDatabase() {
-        taskDao.clearTasksTable()
-        taskDao.clearDiaryTable()
     }
 }

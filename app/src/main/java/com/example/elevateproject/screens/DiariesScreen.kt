@@ -28,6 +28,17 @@ import androidx.compose.ui.unit.sp
 import com.example.elevateproject.viewmodels.DiariesViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+/**
+ * Displays the list of diaries saved by the user.
+ * Allows users to view, edit, and delete existing diaries or navigate to add a new one.
+ *
+ * Features:
+ * - Floating Action Button (FAB) to navigate to the "Add Diary" screen.
+ * - Shows an appropriate message when no diaries are available.
+ * - Provides the ability to edit the title of a diary or delete it via contextual icons.
+ * - Uses a LazyColumn to efficiently render the list of diaries.
+ * - Each diary card navigates to a detailed view when clicked.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiariesScreen(
@@ -57,8 +68,7 @@ fun DiariesScreen(
                 .padding(padding)
                 .fillMaxSize()
         ) {
-            if (diaryItems.isEmpty()) {
-                // Message when no diaries are available
+            if (diaryItems.isEmpty()) { // Message when no diaries are available
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -133,7 +143,7 @@ fun DiariesScreen(
                                     Button(
                                         onClick = {
                                             val updatedDiary = diary.copy(title = newTitle)
-                                            viewModel.updateDiary(updatedDiary) // Save to DB
+                                            viewModel.updateDiary(updatedDiary) // Save new title to DB
                                             isEditing = false
                                         }
                                     ) {
@@ -154,6 +164,20 @@ fun DiariesScreen(
     }
 }
 
+/**
+ * Displays the details of a single diary entry, allowing users to view or update its content.
+ *
+ * Features:
+ * - Displays the title of the diary in the top bar.
+ * - Allows users to edit the content of the diary in a scrollable text field.
+ * - Provides a save button to update the diary's content in the database.
+ * - Navigates back to the diary list screen after saving.
+ *
+ * Parameters:
+ * - `navController`: Navigation controller for managing screen transitions.
+ * - `diaryId`: Unique identifier for the diary entry to display.
+ * - `viewModel`: Instance of the `DiariesViewModel` for accessing and updating diary data.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiaryDetailScreen(

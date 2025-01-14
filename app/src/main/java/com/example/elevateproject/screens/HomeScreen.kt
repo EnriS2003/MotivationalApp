@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FavoriteBorder
 import androidx.compose.material3.Card
@@ -125,7 +127,7 @@ fun HomeScreen(viewModel: QuoteViewModel = viewModel(), navController: NavContro
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(navController: NavController, viewModel: QuoteViewModel) {
-    val favoriteQuotes by viewModel.favoriteQuotes.collectAsState(initial = emptyList())
+    val favoriteQuotes by viewModel.favoriteQuotes.collectAsState()
 
     Scaffold(
         topBar = {
@@ -133,7 +135,7 @@ fun FavoritesScreen(navController: NavController, viewModel: QuoteViewModel) {
                 title = { Text("Favorite Quotes") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.Favorite, contentDescription = "Back")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                     }
                 }
             )
@@ -176,6 +178,25 @@ fun FavoritesScreen(navController: NavController, viewModel: QuoteViewModel) {
                                     text = "— ${quote.author}",
                                     style = MaterialTheme.typography.bodyMedium
                                 )
+                                IconButton(onClick = {
+                                    viewModel.removeQuoteFromFavorites(quote.quote, quote.author)
+                                    println("Removing quote...")
+
+                                    viewModel.checkIfQuoteIsSaved(quote.quote, quote.author) { isSaved ->
+                                        if (isSaved) {
+                                            println("Quote still staved")
+                                        } else {
+                                            println("Quote is not saved")
+                                        }
+                                    }
+
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Delete,
+                                        contentDescription = "Remove from Favorites",
+                                        tint = MaterialTheme.colorScheme.error
+                                    )
+                                }
                             }
                         }
                     }

@@ -13,8 +13,30 @@ import com.example.elevateproject.data.quoteData.QuoteEntity
 import com.example.elevateproject.data.tasksData.TaskDao
 import com.example.elevateproject.data.tasksData.TaskEntity
 
-/*
-Represents the database of the application with the given entities and version.
+/**
+ * Represents the Room database for the application.
+ *
+ * This database class integrates the application's data storage needs, providing access to
+ * the DAO (Data Access Object) interfaces for performing CRUD operations on various entities.
+ *
+ * Entities:
+ * - `DiaryEntity`: Represents diary entries.
+ * - `TaskEntity`: Represents tasks.
+ * - `QuoteEntity`: Represents quotes.
+ *
+ * Key Features:
+ * - Versioning: The database supports version management with migrations to handle schema changes
+ *   across different versions without losing existing data.
+ * - DAOs: Provides access to the DAOs for each entity.
+ *
+ * Migrations:
+ * - `MIGRATION_1_2`: Adds the `tasks_table` for storing task-related data.
+ * - `MIGRATION_2_3`: Adds the `quotes_table` for storing favorite quotes.
+ *
+ * Singleton Pattern:
+ * The database instance is implemented as a singleton to ensure a single shared instance across
+ * the application, improving efficiency and avoiding redundant database connections.
+ *
  */
 @Database(entities = [DiaryEntity::class, TaskEntity::class, QuoteEntity::class], version = 3, exportSchema = false)
 abstract class DiaryDatabase : RoomDatabase() {

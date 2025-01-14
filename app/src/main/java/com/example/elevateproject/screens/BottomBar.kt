@@ -15,8 +15,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 
-/*
-Bottom navigation bar for the app defined here once.
+/**
+ * Bottom navigation bar for the app.
+ *
+ * The `BottomBar` composable defines a consistent bottom navigation bar used throughout the app.
+ * It provides quick access to major screens: Home, Diaries, Tasks, and Settings.
+ *
+ * Key Features:
+ * - Navigation Integration: Each icon button navigates to a corresponding screen using the `NavController`.
+ * - Intuitive Design: Icons represent the purpose of each screen for improved user experience.
+ *
+ * Parameters:
+ * - `navController`: The `NavController` used to handle navigation between screens.
+ *
+ * Navigation Buttons:
+ * - Home: Navigates to the "home" screen.
+ * - Diaries: Navigates to the "diaries" screen.
+ * - Tasks: Navigates to the "task" screen.
+ * - Settings: Navigates to the "settings" screen.
  */
 @Composable
 fun BottomBar(navController: NavController) {

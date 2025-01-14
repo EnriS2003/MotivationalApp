@@ -4,7 +4,7 @@ import androidx.room.*
 import kotlinx.coroutines.flow.Flow
 
 /*
-Defines the database operations for diary entries.
+ * Data Access Object (DAO) for managing diary-related database operations.
  */
 @Dao
 interface DiaryDao {
@@ -25,7 +25,7 @@ interface DiaryDao {
     @Query("SELECT * FROM diary_table WHERE id = :id LIMIT 1")
     fun getDiaryById(id: String): Flow<DiaryEntity>
 
-    // Update a diary
+    // Updates diary information
     @Update
     suspend fun updateDiary(diary: DiaryEntity)
 

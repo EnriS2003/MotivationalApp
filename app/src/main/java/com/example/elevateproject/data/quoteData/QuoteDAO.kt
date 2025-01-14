@@ -12,8 +12,8 @@ interface QuoteDao {
     @Query("SELECT * FROM quotes_table")
     fun getAllQuotes(): Flow<List<QuoteEntity>>
 
-    @Delete
-    suspend fun deleteQuote(quote: QuoteEntity)
+    @Query("DELETE FROM quotes_table WHERE quote = :quote AND author = :author")
+    suspend fun deleteQuote(quote: String, author: String)
 
     @Query("SELECT * FROM quotes_table WHERE quote = :quote AND author = :author LIMIT 1")
     suspend fun getQuote(quote: String, author: String): QuoteEntity?
