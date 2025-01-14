@@ -22,7 +22,6 @@ import androidx.compose.runtime.setValue
 import androidx.navigation.NavController
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.unit.dp
 import com.example.elevateproject.data.tasksData.Task
 import com.example.elevateproject.viewmodels.TaskViewModel
@@ -213,7 +212,7 @@ fun TaskItem(task: Task, onMarkCompleted: () -> Unit, onDelete: () -> Unit) {
 fun AddTaskScreen(navController: NavController, viewModel: TaskViewModel) {
     var title by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf("") }
-    var showDatePicker by remember { mutableStateOf(false) } // State to control the date picker dialog
+//    var showDatePicker by remember { mutableStateOf(false) } // State to control the date picker dialog
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
@@ -247,19 +246,15 @@ fun AddTaskScreen(navController: NavController, viewModel: TaskViewModel) {
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(modifier = Modifier.height(16.dp))
-            // Deadline Picker
-            OutlinedTextField(
-                value = deadline,
-                onValueChange = {},
-                label = { Text("Deadline (press + icon)  -->") },
-                modifier = Modifier.fillMaxWidth(),
-                readOnly = true,
-                trailingIcon = {
-                    IconButton(onClick = { showDatePicker = true }) {
-                        Icon(Icons.Default.Add, contentDescription = "Pick Date")
-                    }
+
+            // Use a custom date picker
+            ManualDateInput(
+                selectedDate = deadline,
+                onDateSelected = { newDate ->
+                    deadline = newDate
                 }
             )
+
             Spacer(modifier = Modifier.height(16.dp))
             // Save Button with delayed snackbar for empty fields
             Button(
@@ -272,7 +267,7 @@ fun AddTaskScreen(navController: NavController, viewModel: TaskViewModel) {
                         }
                         deadline.isBlank() -> {
                             coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Deadline cannot be empty!")
+                                snackbarHostState.showSnackbar("Deadline date format is wrong or is empty!")
                             }
                         }
                         else -> {
@@ -285,72 +280,28 @@ fun AddTaskScreen(navController: NavController, viewModel: TaskViewModel) {
             ) {
                 Text("Add Task")
             }
-            // DatePicker Dialog
-            if (showDatePicker) {
-                DatePickerDialog(
-                    onDismissRequest = { showDatePicker = false },
-                    onDateSelected = { selectedDate ->
-                        deadline = selectedDate
-                        showDatePicker = false
-                    }
-                )
-            }
-
         }
     }
 }
 
-/**
- * Date picker dialog for selecting a date.
- *
- * Highlights:
- * - Displays a Material Design date picker inside an alert dialog.
- * - Scales the date picker for better UI fitting.
- * - Returns the selected date in "dd/MM/yyyy" format.
- *
- * Parameters:
- * - `onDismissRequest`: Callback for dismissing the dialog without selection.
- * - `onDateSelected`: Callback for returning the selected date as a string.
- */
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DatePickerDialog(
-    onDismissRequest: () -> Unit,
-    onDateSelected: (String) -> Unit
-) {
-    val datePickerState = rememberDatePickerState()
-
-    AlertDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(onClick = {
-                val selectedDateMillis = datePickerState.selectedDateMillis
-                val selectedDate = selectedDateMillis?.let {
-                    java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
-                        .format(java.util.Date(it))
-                } ?: ""
-                onDateSelected(selectedDate)
-            }) {
-                Text("OK")
+fun ManualDateInput(selectedDate: String, onDateSelected: (String) -> Unit) {
+    var inputDate by remember { mutableStateOf(selectedDate) }
+    OutlinedTextField(
+        value = inputDate,
+        onValueChange = {
+            inputDate = it
+            // Validation
+            val regex = Regex("^\\d{2}/(0[1-9]|1[0-2]|[1-9])/\\d{4}$")
+            if (regex.matches(it)) {
+                onDateSelected(it)
             }
         },
-        dismissButton = {
-            TextButton(onClick = onDismissRequest) {
-                Text("Cancel")
-            }
-        },
-        text = {
-            // Wrap the DatePicker in a Box for scaling and padding for layout purposes
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .scale(0.9f)
-                    .padding(16.dp)
-            ) {
-                DatePicker(state = datePickerState)
-            }
-        }
+        label = { Text("Enter Date (dd/MM/yyyy)") },
+        modifier = Modifier.fillMaxWidth()
     )
 }
+
+
 
 
