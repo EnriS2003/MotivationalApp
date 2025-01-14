@@ -212,7 +212,6 @@ fun TaskItem(task: Task, onMarkCompleted: () -> Unit, onDelete: () -> Unit) {
 fun AddTaskScreen(navController: NavController, viewModel: TaskViewModel) {
     var title by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf("") }
-//    var showDatePicker by remember { mutableStateOf(false) } // State to control the date picker dialog
     val snackbarHostState = remember { SnackbarHostState() }
     val coroutineScope = rememberCoroutineScope()
 
