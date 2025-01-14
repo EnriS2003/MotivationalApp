@@ -283,6 +283,25 @@ fun AddTaskScreen(navController: NavController, viewModel: TaskViewModel) {
     }
 }
 
+/**
+ * A composable function that provides a manual date input field for users to enter a date in the format "dd/MM/yyyy".
+ *
+ * Key Features:
+ * - Validates user input to ensure it follows the "dd/MM/yyyy" format.
+ * - Ensures the month is valid (1-12) by leveraging a regex pattern.
+ * - Calls the `onDateSelected` callback with the valid date string whenever a valid input is detected.
+ * - Uses an `OutlinedTextField` for input, making it visually consistent with Material Design guidelines.
+ *
+ * Parameters:
+ * - `selectedDate`: The initial date value to display in the input field.
+ * - `onDateSelected`: A callback function triggered when a valid date is entered.
+ *
+ * Notes:
+ * - The regex pattern validates the day (`\\d{2}`), the month (`0[1-9]`, `1[0-2]`, or `[1-9]` for single-digit months),
+ *   and the year (`\\d{4}`).
+ * - Input validation ensures users enter valid months (e.g., no 13 or 00).
+ * - The component is reusable and can be embedded within other composables for date input functionality.
+ */
 @Composable
 fun ManualDateInput(selectedDate: String, onDateSelected: (String) -> Unit) {
     var inputDate by remember { mutableStateOf(selectedDate) }
