@@ -26,13 +26,46 @@ Access your saved quotes, diaries, and tasks even when you’re offline, ensurin
 
 ## Project Architecture
 
-This project follows a MVVM (Model-view-viewmodel) Architecture. The project's file are divided in different folders. In the viewmodel folder it is possible to find the different viewmodels of the application. These are:
-- DiariesViewModel
-- QuoteViewModel
-- TaskViewModel
-- ThemeViewModel
+This project is structured using the MVVM (Model-View-ViewModel) architecture to ensure clear separation of concerns and maintainable code. The project files are organized into distinct folders for better modularity and scalability. 
+The viewmodel folder contains the various ViewModel classes that handle business logic and interact with the corresponding views. These include:
+	- DiariesViewModel: Manages the business logic and state for the Diaries section of the app. It handles data retrieval, updates, and communication with the repository for diary-related operations.
+	- QuoteViewModel: Manages the logic behind the Quotes feature, including fetching random quotes, managing favorites, and handling user interactions.
+	- TaskViewModel: Responsible for the logic related to task management, including adding, updating, deleting, and organizing user tasks.
+	- ThemeViewModel: Maintains and updates the application’s theme state, enabling dynamic theme changes based on user preferences.
 
-For each file there is business logic for each screen they are related to. In the DiariwsViewModel the code and logic for the Diaries section is defined. In the QuoteViewModel the code defining the logic behind the Quotes is defined. So it is for the code and logic in the TaskViewModel related to the tasks feature. In the ThemViewModel the code and logic for mantainign and updating the application's theme is defined.
+Each ViewModel is purpose-built to handle the specific logic for its corresponding feature, ensuring modularity and a clear separation between the UI and the underlying data logic.
+
+The 'screens' folder contains all the screen's file. These file contain the layout of each screen. These are:
+- BottomBar & NavigationRail: This file defines a responsive navigation system for the app that adapts based on the device's orientation. It is defined the logic to automatically display a bottom bar and a navigation rail. It displays a BottomBar in portrait mode. Otherwise it displays the NavigationRail in landscape mode. Each navigation item uses the NavController to navigate between screens.
+
+- DiariesScreen & DiaryDetailScreen & AddDiaryScreen: this file displays the list of diaries saved by the user. Allows users to view, edit, and delete existing diaries or navigate to add a new one. Another composable funciton "DiaryDetailScreen" is defined to display the details of every single diary entity, allowing the user to view or update its content. In this other the screen, it is possible to update the content. AddDiaryScreen is another composable function defined for adding a new Diary. This diary is then added to the database.
+  
+- HomeScreen & FavoriteScreen: in this Composable function, the main screen of the application is represented. Here a random quote is fetched and displayed from the API. While fetching a quote a loading indicator is displayed. An error message is shown on the quote fetch fails.in this case, it shows a saved quote from the database (if available) as a fallback. An icon shows that the quote is one of the favorites one. Therefore, this quote is also shown in the Favourites screen. In the home screen it is possible to save or remove a quote from the database. In the favourite screen it is responsible to see the saved quotes and remove them.
+
+- SettingsScreen: this Composable function displays a setting to permit the user to change the app's theme. The information of the version and the death Looper of the app as long as the copyright are written here.
+
+- TasksScreen & TaskItem & AddTaskScreen: similarly to the diaries screen, this file defines the composable functions that handle the user interface and the logic for managing tasks in the application. Task screen is the main screen displaying the list of tasks.it allows the user to add new tasks, view existing ones, and filter completed task. TaskItem is a Composable component that represents an individual task, along with its associated actions, such as marking as completed or deleting. AddTaskScreen is a screen for adding new tasks, including fields for the task, title and deadline. This fields are validated, and when the task is added is then saved in the database and shown in the task screen.
+
+## Features Overview
+
+Motivational Quotes
+	- Random Quotes: Fetch a new motivational quote each time the user opens the app or presses a refresh button.
+	- Favorites: Save motivational quotes to the database. These favorite quotes are shown in a dedicated section for future reference. It is possible to remove each of them at user's choice.
+	- Offline Support: Display saved quotes from the local database when the app is offline or API fetching is not working.
+
+Diaries
+	- Diary Management: Add, edit, and delete diary entries. Each diary entry includes a title, content, and timestamp.
+	- Detailed View: View and edit the content of individual diary entries.
+	- Persistent Storage: All diary entries are saved locally in a database.
+
+Tasks
+	- Task Tracking: Add tasks with titles and deadlines. Mark tasks as completed or delete them.
+	- Deadline Highlighting: Visually distinguish tasks with upcoming deadlines or overdue tasks.
+	- Filtering: Filter tasks by completion status.
+
+Theme Management
+	- Dynamic Themes: Allow users to choose between light, dark, or system default themes.
+	- User Preferences: Persist theme preferences across app sessions.
 
 
 ## Badges
