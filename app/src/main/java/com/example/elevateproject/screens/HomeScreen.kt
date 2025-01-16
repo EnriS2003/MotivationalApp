@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -59,6 +60,7 @@ import com.example.elevateproject.viewmodels.QuoteViewModel
  * - Dynamically fetches and displays quotes using the `QuoteViewModel`.
  * - Reacts to changes in favorite status with an updated icon.
  * - Supports navigation to other parts of the application.
+ * - Automatic change between Navigation Bar and Navigation Rail based on screen size.
  *
  * Parameters:
  * - `viewModel`: The `QuoteViewModel` that manages the state and operations for quotes.
@@ -74,10 +76,11 @@ fun HomeScreen(viewModel: QuoteViewModel = viewModel(), navController: NavContro
     LaunchedEffect(Unit) {
         viewModel.fetchRandomQuote()
     }
-
     Scaffold(
         bottomBar = {
-            BottomBar(navController)
+            if (!isLandscape()) {
+                BottomBar(navController)
+            }
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { navController.navigate("favorites") }) {
@@ -89,93 +92,98 @@ fun HomeScreen(viewModel: QuoteViewModel = viewModel(), navController: NavContro
             }
         },
         content = { padding -> //Padding for organizing the content on the Scaffold
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(padding),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Quote",
-                    style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(8.dp)
-                )
-                // Show loading, error, or quote
-                when {
-                    quoteState.isLoading -> {
-                        CircularProgressIndicator()
-                    }
-                    quoteState.error != null -> {
-                        // Show a saved citation
-                        var savedQuote by remember { mutableStateOf<QuoteEntity?>(null) }
-
-                        LaunchedEffect(Unit) {
-                            viewModel.getRandomSavedQuote { randomQuote ->
-                                savedQuote = randomQuote
-                            }
+            Row {
+                if (isLandscape()) {
+                    NavigationRail(navController)
+                }
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(padding),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Quote",
+                        style = MaterialTheme.typography.titleLarge,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                    // Show loading, error, or quote
+                    when {
+                        quoteState.isLoading -> {
+                            CircularProgressIndicator()
                         }
+                        quoteState.error != null -> {
+                            // Show a saved citation
+                            var savedQuote by remember { mutableStateOf<QuoteEntity?>(null) }
 
-                        if (savedQuote != null) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = savedQuote!!.quote,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                                )
-                                Text(
-                                    text = "— ${savedQuote!!.author}",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    modifier = Modifier.padding(bottom = 16.dp)
-                                )
+                            LaunchedEffect(Unit) {
+                                viewModel.getRandomSavedQuote { randomQuote ->
+                                    savedQuote = randomQuote
+                                }
+                            }
 
-                                IconButton(
-                                    onClick = { println("This is a favorite quote")}
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Favorite,
-                                        contentDescription = "Show this is a favorite quote" ,
-                                        tint = MaterialTheme.colorScheme.primary
+                            if (savedQuote != null) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = savedQuote!!.quote,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                                     )
+                                    Text(
+                                        text = "— ${savedQuote!!.author}",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.padding(bottom = 16.dp)
+                                    )
+
+                                    IconButton(
+                                        onClick = { println("This is a favorite quote")}
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Favorite,
+                                            contentDescription = "Show this is a favorite quote" ,
+                                            tint = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+
                                 }
 
+                            } else {
+                                Text(
+                                    text = "Error: ${quoteState.error}",
+                                    color = MaterialTheme.colorScheme.error,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
                             }
-
-                        } else {
-                            Text(
-                                text = "Error: ${quoteState.error}",
-                                color = MaterialTheme.colorScheme.error,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
                         }
-                    }
-                    else -> {
-                        Text(
-                            text = quoteState.quote,
-                            style = MaterialTheme.typography.bodyLarge,
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-                        )
-                        Text(
-                            text = "— ${quoteState.author}",
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                        )
-
-                        IconButton(
-                            onClick = {
-                                if (isQuoteSaved) {
-                                    viewModel.removeQuoteFromFavorites(quoteState.quote, quoteState.author)
-                                } else {
-                                    viewModel.saveQuoteToFavorites(quoteState.quote, quoteState.author)
-                                }
-                                isQuoteSaved =!isQuoteSaved
-                            }
-                        ) {
-                            Icon(
-                                imageVector = if (isQuoteSaved) Icons.Default.Favorite else Icons.Filled.FavoriteBorder,
-                                contentDescription = if (isQuoteSaved) "Remove from Favorites" else "Save to Favorites",
-                                tint = if (isQuoteSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                        else -> {
+                            Text(
+                                text = quoteState.quote,
+                                style = MaterialTheme.typography.bodyLarge,
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
                             )
+                            Text(
+                                text = "— ${quoteState.author}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.padding(bottom = 16.dp)
+                            )
+
+                            IconButton(
+                                onClick = {
+                                    if (isQuoteSaved) {
+                                        viewModel.removeQuoteFromFavorites(quoteState.quote, quoteState.author)
+                                    } else {
+                                        viewModel.saveQuoteToFavorites(quoteState.quote, quoteState.author)
+                                    }
+                                    isQuoteSaved =!isQuoteSaved
+                                }
+                            ) {
+                                Icon(
+                                    imageVector = if (isQuoteSaved) Icons.Default.Favorite else Icons.Filled.FavoriteBorder,
+                                    contentDescription = if (isQuoteSaved) "Remove from Favorites" else "Save to Favorites",
+                                    tint = if (isQuoteSaved) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
+                                )
+                            }
                         }
                     }
                 }
@@ -195,6 +203,7 @@ fun HomeScreen(viewModel: QuoteViewModel = viewModel(), navController: NavContro
  *    and the UI dynamically.
  * 3. Displays a message if there are no saved favorite quotes.
  * 4. Supports navigation back to the home screen using a top app bar.
+ * 5. Automatic change between Navigation Bar and Navigation Rail based on screen size.
  *
  * Parameters:
  * - `navController`: The `NavController` for handling navigation between screens.
@@ -206,6 +215,11 @@ fun FavoritesScreen(navController: NavController, viewModel: QuoteViewModel) {
     val favoriteQuotes by viewModel.favoriteQuotes.collectAsState()
 
     Scaffold(
+        bottomBar = {
+            if (!isLandscape()) {
+                BottomBar(navController)
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text("Favorite Quotes") },
@@ -217,61 +231,66 @@ fun FavoritesScreen(navController: NavController, viewModel: QuoteViewModel) {
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-            if (favoriteQuotes.isEmpty()) {
-                Text(
-                    text = "No favorite quotes yet!",
-                    style = MaterialTheme.typography.bodyLarge,
+        Row {
+            if (isLandscape()) {
+                NavigationRail(navController)
+            }
+            Column(
                     modifier = Modifier
+                        .padding(padding)
                         .fillMaxSize()
-                        .wrapContentHeight()
-                        .padding(16.dp),
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                )
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    items(favoriteQuotes) { quote ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface)
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text(
-                                    text = quote.quote,
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    modifier = Modifier.padding(bottom = 8.dp)
-                                )
-                                Text(
-                                    text = "— ${quote.author}",
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                IconButton(onClick = {
-                                    viewModel.removeQuoteFromFavorites(quote.quote, quote.author)
-                                    println("Removing quote...")
-
-                                    viewModel.checkIfQuoteIsSaved(quote.quote, quote.author) { isSaved ->
-                                        if (isSaved) {
-                                            println("Quote still staved")
-                                        } else {
-                                            println("Quote is not saved")
-                                        }
-                                    }
-
-                                }) {
-                                    Icon(
-                                        imageVector = Icons.Default.Delete,
-                                        contentDescription = "Remove from Favorites",
-                                        tint = MaterialTheme.colorScheme.error
+                    ) {
+                if (favoriteQuotes.isEmpty()) {
+                    Text(
+                        text = "No favorite quotes yet!",
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .wrapContentHeight()
+                            .padding(16.dp),
+                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                    )
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        items(favoriteQuotes) { quote ->
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                colors = CardDefaults.cardColors(MaterialTheme.colorScheme.surface)
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = quote.quote,
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        modifier = Modifier.padding(bottom = 8.dp)
                                     )
+                                    Text(
+                                        text = "— ${quote.author}",
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                    IconButton(onClick = {
+                                        viewModel.removeQuoteFromFavorites(quote.quote, quote.author)
+                                        println("Removing quote...")
+
+                                        viewModel.checkIfQuoteIsSaved(quote.quote, quote.author) { isSaved ->
+                                            if (isSaved) {
+                                                println("Quote still staved")
+                                            } else {
+                                                println("Quote is not saved")
+                                            }
+                                        }
+
+                                    }) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = "Remove from Favorites",
+                                            tint = MaterialTheme.colorScheme.error
+                                        )
+                                    }
                                 }
                             }
                         }

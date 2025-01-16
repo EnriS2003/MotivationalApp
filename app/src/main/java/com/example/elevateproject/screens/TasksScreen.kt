@@ -5,6 +5,8 @@ import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
@@ -28,6 +30,8 @@ import com.example.elevateproject.viewmodels.TaskViewModel
 import kotlinx.coroutines.launch
 
 /**
+ * TasksScreen
+ *
  * This file defines the user interface and logic for managing tasks in the application.
  * It includes the following main components:
  *
@@ -42,6 +46,7 @@ import kotlinx.coroutines.launch
  * - Filtering of completed tasks.
  * - Ability to add, update, or delete tasks.
  * - Utilizes Material Design 3 components for a modern and responsive UI.
+ * - Automatic change between Navigation Bar and Navigation Rail based on screen size.
  *
  * Main Dependencies:
  * - ViewModel for managing task state.
@@ -75,62 +80,76 @@ fun TasksScreen(navController: NavController, viewModel: TaskViewModel) {
                 Icon(Icons.Default.Add, contentDescription = "Add Task")
             }
         },
-        bottomBar = { BottomBar(navController) }
+        bottomBar = {
+            if (!isLandscape()) {
+                BottomBar(navController)
+            }
+        },
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize(),
-        ) {
-            if (tasks.isEmpty()) {
-                // Message if no tasks
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No tasks available. Add a new task!",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
-            } else {
-                // Task list
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    val tasksToShow = if (showExpiredTasks) viewModel.getExpiredTasks() else tasks
-                    items(tasksToShow) { task ->
-                        TaskItem(
-                            task = task,
-                            onMarkCompleted = {
-                                if (task.isCompleted) {
-                                    viewModel.unmarkTaskAsCompleted(task)
-                                } else {
-                                    viewModel.markTaskAsCompleted(task)
-                                }
-                            },
-                            onDelete = { viewModel.deleteTask(task) }
+        Row {
+            if (isLandscape()) {
+                NavigationRail(navController)
+            }
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize(),
+            ) {
+                if (tasks.isEmpty()) {
+                    // Message if no tasks
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No tasks available. Add a new task!",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
+                    }
+                } else {
+                    // Task list
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        val tasksToShow =
+                            if (showExpiredTasks) viewModel.getExpiredTasks() else tasks
+                        items(tasksToShow) { task ->
+                            TaskItem(
+                                task = task,
+                                onMarkCompleted = {
+                                    if (task.isCompleted) {
+                                        viewModel.unmarkTaskAsCompleted(task)
+                                    } else {
+                                        viewModel.markTaskAsCompleted(task)
+                                    }
+                                },
+                                onDelete = { viewModel.deleteTask(task) }
+                            )
+                        }
                     }
                 }
             }
         }
+
     }
 }
 
 /**
+ * TaskItem
+ *
  * Displays a single task in the task list.
  *
  * Highlights:
  * - Adjusts the card's background color based on the task's completion status or if the deadline has passed.
  * - Provides actions for marking the task as completed or deleting it.
  * - Uses `remember` to compute if the deadline has passed for the task dynamically.
+ * - Automatic change between Navigation Bar and Navigation Rail based on screen size.
  *
  * Parameters:
  * - `task`: The task to display.
@@ -195,6 +214,8 @@ fun TaskItem(task: Task, onMarkCompleted: () -> Unit, onDelete: () -> Unit) {
 }
 
 /**
+ * AddTaskScreen
+ *
  * Screen for adding a new task to the task list.
  *
  * Highlights:
@@ -202,6 +223,7 @@ fun TaskItem(task: Task, onMarkCompleted: () -> Unit, onDelete: () -> Unit) {
  * - Provides a date picker dialog for selecting the deadline.
  * - Validates input fields and shows a snackbar for missing fields.
  * - Uses `SnackbarHost` to display messages for invalid input.
+ * - Automatic change between Navigation Bar and Navigation Rail based on screen size.
  *
  * Parameters:
  * - `navController`: Handles navigation between screens.
@@ -216,6 +238,11 @@ fun AddTaskScreen(navController: NavController, viewModel: TaskViewModel) {
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        bottomBar = {
+            if (!isLandscape()) {
+                BottomBar(navController)
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text("Add Task") },
@@ -230,60 +257,71 @@ fun AddTaskScreen(navController: NavController, viewModel: TaskViewModel) {
             SnackbarHost(hostState = snackbarHostState)
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("Task Title") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Use a custom date picker
-            ManualDateInput(
-                selectedDate = deadline,
-                onDateSelected = { newDate ->
-                    deadline = newDate
-                }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-            // Save Button with delayed snackbar for empty fields
-            Button(
-                onClick = {
-                    when {
-                        title.isBlank() -> {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Task title cannot be empty!")
-                            }
-                        }
-                        deadline.isBlank() -> {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Deadline date format is wrong or is empty!")
-                            }
-                        }
-                        else -> {
-                            viewModel.addTask(title, deadline)
-                            navController.popBackStack() // Go back to the previous screen
-                        }
-                    }
-                },
-                modifier = Modifier.align(Alignment.End)
+        Row {
+            if (isLandscape()) {
+                NavigationRail(navController)
+            }
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Text("Add Task")
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Task Title") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Use a custom date picker
+                ManualDateInput(
+                    selectedDate = deadline,
+                    onDateSelected = { newDate ->
+                        deadline = newDate
+                    }
+                )
+
+                Spacer(modifier = Modifier.height(16.dp))
+                // Save Button with delayed snackbar for empty fields
+                Button(
+                    onClick = {
+                        when {
+                            title.isBlank() -> {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Task title cannot be empty!")
+                                }
+                            }
+
+                            deadline.isBlank() -> {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Deadline date format is wrong or is empty!")
+                                }
+                            }
+
+                            else -> {
+                                viewModel.addTask(title, deadline)
+                                navController.popBackStack() // Go back to the previous screen
+                            }
+                        }
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Add Task")
+                }
             }
         }
+
     }
 }
 
 /**
+ * ManualDateInput
+ *
  * A composable function that provides a manual date input field for users to enter a date in the format "dd/MM/yyyy".
  *
  * Key Features:

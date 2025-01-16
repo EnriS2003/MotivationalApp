@@ -28,7 +28,10 @@ import androidx.compose.ui.unit.sp
 import com.example.elevateproject.viewmodels.DiariesViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
+
 /**
+ * DiariesScreen
+ *
  * Displays the list of diaries saved by the user.
  * Allows users to view, edit, and delete existing diaries or navigate to add a new one.
  *
@@ -38,6 +41,7 @@ import java.time.LocalDateTime
  * - Provides the ability to edit the title of a diary or delete it via contextual icons.
  * - Uses a LazyColumn to efficiently render the list of diaries.
  * - Each diary card navigates to a detailed view when clicked.
+ * - Automatic change between Navigation Bar and Navigation Rail based on screen size.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,7 +52,11 @@ fun DiariesScreen(
     val diaryItems by viewModel.diaryItems.collectAsState(initial = emptyList())
 
     Scaffold(
-        bottomBar = { BottomBar(navController) },
+        bottomBar = {
+            if (!isLandscape()) {
+                BottomBar(navController)
+            }
+        },
         floatingActionButton = {
             FloatingActionButton(onClick = {
                 navController.navigate("addDiary")
@@ -63,104 +71,116 @@ fun DiariesScreen(
             )
         },
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-        ) {
-            if (diaryItems.isEmpty()) { // Message when no diaries are available
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(16.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = "No diaries yet. Start by adding one!",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    contentPadding = PaddingValues(16.dp)
-                ) {
-                    itemsIndexed(diaryItems) { _, diary ->
+        Row {
+            if (isLandscape()) {
+                NavigationRail(navController)
+            }
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+            ) {
+                if (diaryItems.isEmpty()) { // Message when no diaries are available
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "No diaries yet. Start by adding one!",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
+                    }
+                } else {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        contentPadding = PaddingValues(16.dp)
+                    ) {
+                        itemsIndexed(diaryItems) { _, diary ->
 
-                        var isEditing by remember { mutableStateOf(false) }
-                        var newTitle by remember { mutableStateOf(diary.title) }
+                            var isEditing by remember { mutableStateOf(false) }
+                            var newTitle by remember { mutableStateOf(diary.title) }
 
-                        Card(
-                            onClick = {
-                                val diaryId = diary.id
-                                navController.navigate("diaryDetail/${diaryId}")
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(80.dp)
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
+                            Card(
+                                onClick = {
+                                    val diaryId = diary.id
+                                    navController.navigate("diaryDetail/${diaryId}")
+                                },
                                 modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(15.dp)
+                                    .fillMaxWidth()
+                                    .height(80.dp)
                             ) {
-                                Text(
-                                    text = diary.title,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontSize = 22.sp,
-                                    modifier = Modifier.weight(1f)
-                                )
-                                IconButton(
-                                    onClick = { isEditing = true } // Open edit mode
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(15.dp)
                                 ) {
-                                    Icon(Icons.Default.Edit, contentDescription = "Edit Diary Title")
-                                }
-                                IconButton(
-                                    onClick = { viewModel.removeDiary(diary) }
-                                ) {
-                                    Icon(Icons.Default.Delete, contentDescription = "Delete Diary")
+                                    Text(
+                                        text = diary.title,
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontSize = 22.sp,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    IconButton(
+                                        onClick = { isEditing = true } // Open edit mode
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Edit,
+                                            contentDescription = "Edit Diary Title"
+                                        )
+                                    }
+                                    IconButton(
+                                        onClick = { viewModel.removeDiary(diary) }
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Delete,
+                                            contentDescription = "Delete Diary"
+                                        )
+                                    }
                                 }
                             }
-                        }
-                        if (isEditing) {
-                            AlertDialog(
-                                onDismissRequest = { isEditing = false },
-                                title = { Text("Edit Title") },
-                                text = {
-                                    TextField(
-                                        value = newTitle,
-                                        onValueChange = { newTitle = it },
-                                        label = { Text("New Title") },
-                                        singleLine = true
-                                    )
-                                },
-                                confirmButton = {
-                                    Button(
-                                        onClick = {
-                                            val updatedDiary = diary.copy(title = newTitle)
-                                            viewModel.updateDiary(updatedDiary) // Save new title to DB
-                                            isEditing = false
+                            if (isEditing) {
+                                AlertDialog(
+                                    onDismissRequest = { isEditing = false },
+                                    title = { Text("Edit Title") },
+                                    text = {
+                                        TextField(
+                                            value = newTitle,
+                                            onValueChange = { newTitle = it },
+                                            label = { Text("New Title") },
+                                            singleLine = true
+                                        )
+                                    },
+                                    confirmButton = {
+                                        Button(
+                                            onClick = {
+                                                val updatedDiary = diary.copy(title = newTitle)
+                                                viewModel.updateDiary(updatedDiary) // Save new title to DB
+                                                isEditing = false
+                                            }
+                                        ) {
+                                            Text("Save")
                                         }
-                                    ) {
-                                        Text("Save")
+                                    },
+                                    dismissButton = {
+                                        Button(onClick = { isEditing = false }) {
+                                            Text("Cancel")
+                                        }
                                     }
-                                },
-                                dismissButton = {
-                                    Button(onClick = { isEditing = false }) {
-                                        Text("Cancel")
-                                    }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
-                }
-            } // If else statement closing bracket
+                } // If else statement closing bracket
+            }
         }
+
     }
 }
 
@@ -172,6 +192,7 @@ fun DiariesScreen(
  * - Allows users to edit the content of the diary in a scrollable text field.
  * - Provides a save button to update the diary's content in the database.
  * - Navigates back to the diary list screen after saving.
+ * - Automatic change between Navigation Bar and Navigation Rail based on screen size.
  *
  * Parameters:
  * - `navController`: Navigation controller for managing screen transitions.
@@ -197,54 +218,62 @@ fun DiaryDetailScreen(
     }
 
     Scaffold(
-        bottomBar = { BottomBar(navController) },
+        bottomBar = {
+            if (!isLandscape()) {
+                BottomBar(navController)
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text("Diary - ${diary?.title ?: "Diary Details"}") },
             )
         }
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(horizontal = 16.dp) // Lateral padding
-                .verticalScroll(rememberScrollState()), // Scrollable interface
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            // Input for the content of the diary
-            OutlinedTextField(
-                value = content,
-                onValueChange = { content = it },
-                label = { Text("Content") },
+        Row {
+            if (isLandscape()) {
+                NavigationRail(navController)
+            }
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight(),
-                maxLines = Int.MAX_VALUE,
-                shape = MaterialTheme.shapes.medium
-            )
-
-            // Button for saving the diary
-            Button(
-                onClick = {
-                    // Updates diary only if diary is not null
-                    diary?.let { currentDiary ->
-                        val updatedDiary = currentDiary.copy(content = content)
-                        viewModel.updateDiary(updatedDiary)
-                    }
-                    navController.navigate("diaries")
-                },
-                modifier = Modifier
-                    .align(Alignment.End)
-                    .padding(top=16.dp)
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp) // Lateral padding
+                    .verticalScroll(rememberScrollState()), // Scrollable interface
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.Start
             ) {
-                Text("Save")
+                // Input for the content of the diary
+                OutlinedTextField(
+                    value = content,
+                    onValueChange = { content = it },
+                    label = { Text("Content") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight(),
+                    maxLines = Int.MAX_VALUE,
+                    shape = MaterialTheme.shapes.medium
+                )
+
+                // Button for saving the diary
+                Button(
+                    onClick = {
+                        // Updates diary only if diary is not null
+                        diary?.let { currentDiary ->
+                            val updatedDiary = currentDiary.copy(content = content)
+                            viewModel.updateDiary(updatedDiary)
+                        }
+                        navController.navigate("diaries")
+                    },
+                    modifier = Modifier
+                        .align(Alignment.End)
+                        .padding(top = 16.dp)
+                ) {
+                    Text("Save")
+                }
             }
         }
     }
 }
-
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -257,6 +286,11 @@ fun AddDiaryScreen(navController: NavController, viewModel: DiariesViewModel) {
     val coroutineScope = rememberCoroutineScope()
 
     Scaffold(
+        bottomBar = {
+            if (!isLandscape()) {
+                BottomBar(navController)
+            }
+        },
         topBar = {
             TopAppBar(
                 title = { Text("Add Diary") },
@@ -269,49 +303,56 @@ fun AddDiaryScreen(navController: NavController, viewModel: DiariesViewModel) {
         },
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // Host for the Snackbar
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            OutlinedTextField(
-                value = title,
-                onValueChange = { title = it },
-                label = { Text("Diary Title") },
-                modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = content,
-                onValueChange = { content = it },
-                label = { Text("Diary Content") },
+        Row {
+            if (isLandscape()) {
+                NavigationRail(navController)
+            }
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .height(150.dp), // Adjust height for multiline input
-                maxLines = 5
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Button(
-                onClick = {
-                    when {
-                        title.isBlank() -> {
-                            coroutineScope.launch {
-                                snackbarHostState.showSnackbar("Please provide a title for the diary!")
+                    .padding(padding)
+                    .fillMaxSize()
+                    .padding(16.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                OutlinedTextField(
+                    value = title,
+                    onValueChange = { title = it },
+                    label = { Text("Diary Title") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                OutlinedTextField(
+                    value = content,
+                    onValueChange = { content = it },
+                    label = { Text("Diary Content") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp), // Adjust height for multiline input
+                    maxLines = 5
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Button(
+                    onClick = {
+                        when {
+                            title.isBlank() -> {
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar("Please provide a title for the diary!")
+                                }
+                            }
+
+                            else -> {
+                                val date = LocalDateTime.now().toString()
+                                viewModel.addDiary(title, content, date) // Save diary in DB
+                                navController.popBackStack() // Go back to the previous screen
                             }
                         }
-                        else -> {
-                            val date = LocalDateTime.now().toString()
-                            viewModel.addDiary(title,content,date) // Save diary in DB
-                            navController.popBackStack() // Go back to the previous screen
-                        }
-                    }
-                },
-                modifier = Modifier.align(Alignment.End)
-            ) {
-                Text("Save Diary")
+                    },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Text("Save Diary")
+                }
             }
         }
     }

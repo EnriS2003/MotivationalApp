@@ -18,59 +18,87 @@ import com.example.elevateproject.ui.theme.ElevateProjectTheme
 import com.example.elevateproject.viewmodels.ThemeViewModel
 
 /**
+ * SettingsScreen
+ *
  * Composable function for displaying the Settings screen.
  *
  * This screen provides various settings options for the app, such as theme selection and app information.
- * It also includes navigation functionality via the bottom bar.
+ * It also includes navigation functionality via the bottom bar. There is an automatic change between
+ * Navigation Bar and Navigation Rail based on screen size.
  *
- * @param navController The navigation controller for navigating between screens.
- * @param viewModel The `ThemeViewModel` that provides the state and logic for theme selection.
  */
 @Composable
 fun SettingsScreen(navController: NavController, viewModel: ThemeViewModel) {
     Scaffold(
-        bottomBar = { BottomBar(navController) }
+        bottomBar = {
+            if (!isLandscape()) {
+                BottomBar(navController)
+            }
+        },
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .padding(padding)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text("Settings", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(bottom = 24.dp))
+        Row {
+            if (isLandscape()) {
+                NavigationRail(navController)
+            }
+            Column(
+                modifier = Modifier
+                    .padding(padding)
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.Start
+            ) {
+                Text(
+                    "Settings",
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier.padding(bottom = 24.dp)
+                )
 
-            // Theme of the app
-            Text("Theme", style = MaterialTheme.typography.titleMedium)
-            Spacer(modifier = Modifier.height(8.dp).padding(bottom=26.dp).padding(top=24.dp))
-            ThemeSetting(viewModel)
-            Spacer(modifier = Modifier.height(24.dp))
+                // Theme of the app
+                Text("Theme", style = MaterialTheme.typography.titleMedium)
+                Spacer(
+                    modifier = Modifier
+                        .height(8.dp)
+                        .padding(bottom = 26.dp)
+                        .padding(top = 24.dp)
+                )
+                ThemeSettings(viewModel)
+                Spacer(modifier = Modifier.height(24.dp))
 
-            // About the app
-            Text("About the App", style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(top=24.dp).padding(bottom = 8.dp))
-            Text(
-                text = "Developed by: Enri Sulejmani",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Text(
-                text = "Version: 1.0.0",
-                style = MaterialTheme.typography.bodyMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            Text(
-                text = "© 2025 UniBz project. All rights reserved.",
-                style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(bottom = 16.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+                // About the app
+                Text(
+                    "About the App",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier
+                        .padding(top = 24.dp)
+                        .padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "Developed by: Enri Sulejmani",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "Version: 1.0.0",
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                Text(
+                    text = "© 2025 UniBz project. All rights reserved.",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
         }
+
     }
 }
 
 /**
+ * ThemeSettings
+ *
  * Composable function for displaying the theme selection options.
  *
  * Allows users to switch between Light, Dark, and System Default themes.
@@ -78,7 +106,7 @@ fun SettingsScreen(navController: NavController, viewModel: ThemeViewModel) {
  * @param themeViewModel The `ThemeViewModel` managing the state and logic for theme selection.
  */
 @Composable
-fun ThemeSetting(themeViewModel: ThemeViewModel) {
+fun ThemeSettings(themeViewModel: ThemeViewModel) {
     val selectedTheme by themeViewModel.theme.collectAsState()
     val themes = listOf("Light", "Dark", "System Default")
 
@@ -86,7 +114,9 @@ fun ThemeSetting(themeViewModel: ThemeViewModel) {
         themes.forEach { theme ->
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(8.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
             ) {
                 RadioButton(
                     selected = (theme == selectedTheme), // Use the selected theme
@@ -100,6 +130,8 @@ fun ThemeSetting(themeViewModel: ThemeViewModel) {
 }
 
 /**
+ * SettingsScreenPreview
+ *
  * Preview function for the Settings screen.
  *
  * This simulates the `SettingsScreen` for testing and visualization in the IDE preview.
@@ -115,6 +147,9 @@ fun SettingsScreenPreview() {
     }
     // Apply the theme and display the Settings screen preview.
     ElevateProjectTheme {
-        SettingsScreen(navController = NavController(LocalContext.current), viewModel = themeViewModel)
+        SettingsScreen(
+            navController = NavController(LocalContext.current),
+            viewModel = themeViewModel
+        )
     }
 }
