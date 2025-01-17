@@ -223,6 +223,7 @@ fun TaskItem(task: Task, onMarkCompleted: () -> Unit, onDelete: () -> Unit) {
  * - Provides a date picker dialog for selecting the deadline.
  * - Validates input fields and shows a snackbar for missing fields.
  * - Uses `SnackbarHost` to display messages for invalid input.
+ * - Saves the new task entry to the database.
  * - Automatic change between Navigation Bar and Navigation Rail based on screen size.
  *
  * Parameters:

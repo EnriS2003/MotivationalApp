@@ -13,39 +13,50 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeFormatterBuilder
 import java.time.format.DateTimeParseException
 
 /**
- * Repository for managing tasks.
+ * TaskViewModel
  *
- * The `TaskRepository` serves as an abstraction layer between the `TaskDao` (data access object)
- * and the rest of the application. It encapsulates the logic for accessing and managing task-related data,
- * ensuring that the ViewModels interact with a clean and consistent interface.
+ * ViewModel for managing tasks in the application.
  *
- * Properties:
- * - `allTasks`: A `Flow` that provides a real-time stream of all tasks stored in the database.
- *
- * Methods:
- * - `insertTask(task: TaskEntity)`: Inserts a new task into the database.
- * - `updateTask(task: TaskEntity)`: Updates an existing task in the database.
- * - `deleteTask(task: TaskEntity)`: Deletes a specific task from the database.
- * - `resetDatabase()`: Clears all tasks and diaries from the database by invoking DAO methods.
- *
- * Dependencies:
- * - `TaskDao`: Used to interact with the tasks-related operations in the database.
+ * The `TaskViewModel` acts as a mediator between the UI layer and the `TaskRepository`.
+ * It handles business logic for task-related features, ensuring that the UI can interact
+ * with task data in a clean and structured manner.
  *
  * Key Features:
- * - Separation of Concerns: This repository ensures that the ViewModels do not directly interact with
- *   the database, maintaining a clean architecture.
- * - Real-Time Updates: By leveraging Kotlin Flows, the repository ensures that changes to the task data
- *   are observed in real-time by the ViewModel and subsequently by the UI.
- * - Database Reset: Provides functionality to clear all tasks and diaries, useful for resetting the application state.
+ * - **Real-Time Task Management**: The ViewModel uses `StateFlow` to provide real-time updates to the UI
+ *   for any changes in the list of tasks stored in the database.
+ * - **Task Expiration Logic**: Includes methods to check if tasks have expired based on their deadlines.
+ * - **CRUD Operations**: Provides functionality to add, update, and delete tasks, ensuring
+ *   encapsulation of the business logic.
+ * - **Separation of Concerns**: Ensures that the UI layer does not interact directly with the database,
+ *   adhering to the principles of clean architecture.
+ *
+ * Properties:
+ * - `tasks`: A `StateFlow` holding the list of tasks, automatically updated when the database changes.
+ *
+ * Methods:
+ * - `getExpiredTasks()`: Filters and returns tasks with deadlines earlier than the current date.
+ * - `addTask(title: String, deadline: String)`: Adds a new task to the database.
+ * - `markTaskAsCompleted(task: Task)`: Marks a task as completed by updating its status in the database.
+ * - `unmarkTaskAsCompleted(task: Task)`: Reverts a task's status to not completed.
+ * - `deleteTask(task: Task)`: Deletes a task from the database.
+ *
+ * Conversion Functions:
+ * - `TaskEntity.toTask()`: Converts a `TaskEntity` (database model) into a `Task` (domain model).
+ * - `Task.toEntity()`: Converts a `Task` (domain model) into a `TaskEntity` (database model).
  */
+
 class TaskViewModel(private val repository: TaskRepository) : ViewModel() {
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+    private val dateFormatter = DateTimeFormatterBuilder()
+        .appendPattern("dd/")
+        .appendValue(java.time.temporal.ChronoField.MONTH_OF_YEAR)
+        .appendPattern("/yyyy")
+        .toFormatter()
 
     // StateFlow for holding the list of tasks
     val tasks: StateFlow<List<Task>> = repository.allTasks

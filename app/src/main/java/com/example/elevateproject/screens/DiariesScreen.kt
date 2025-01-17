@@ -185,6 +185,8 @@ fun DiariesScreen(
 }
 
 /**
+ * DiaryDetailScreen
+ *
  * Displays the details of a single diary entry, allowing users to view or update its content.
  *
  * Features:
@@ -275,7 +277,21 @@ fun DiaryDetailScreen(
     }
 }
 
-
+/**
+ * AddDiaryScreen
+ *
+ * Screen for adding a new diary to the diary list.
+ *
+ * Highlights:
+ * - Includes input fields for the diary title.
+ * - Uses `SnackbarHost` to display messages for missing input.
+ * - Saves the new diary entry in the database.
+ * - Automatic change between Navigation Bar and Navigation Rail based on screen size.
+ *
+ * Parameters:
+ * - `navController`: Handles navigation between screens.
+ * - `viewModel`: Manages the task state and interactions.
+ */
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
