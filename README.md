@@ -149,7 +149,7 @@ Theme Management
 Version 1.0.0
 
 ## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+Demo video of my application at [this link](https://youtu.be/my3hIVGR2Fk)
 
 ## Installation
 To work on the project, or run the app you would need **Andorid Studio Koala Feature Drop | 2024.1.2** or a recent version.
